@@ -1,192 +1,341 @@
-\documentclass[10pt,pdf,hyperref={unicode}]{beamer}
-
-\mode<presentation>
-{
-\usetheme{boxes}
+\documentclass{beamer}
 \beamertemplatenavigationsymbolsempty
-
+\usecolortheme{beaver}
+\setbeamertemplate{blocks}[rounded=true, shadow=true]
 \setbeamertemplate{footline}[page number]
-\setbeamersize{text margin left=0.5em, text margin right=0.5em}
-}
-
+%
 \usepackage[utf8]{inputenc}
-\usepackage[english, russian]{babel}
-\usepackage{bm}
-\usepackage{multirow}
-\usepackage{ragged2e}
-\usepackage{indentfirst}
-\usepackage{multicol}
+\usepackage[english,russian]{babel}
+\usepackage{amssymb,amsfonts,amsmath,mathtext}
 \usepackage{subfig}
-\usepackage{amsmath,amssymb}
-\usepackage{enumerate}
-\usepackage{mathtools}
-\usepackage{comment}
-\usepackage{multicol}
-
-\usepackage[all]{xy}
-
-\usepackage{tikz}
-\usetikzlibrary{positioning,arrows}
-
-\tikzstyle{name} = [parameters]
-\definecolor{name}{rgb}{0.5,0.5,0.5}
-
-\usepackage{caption}
-\captionsetup{skip=0pt,belowskip=0pt}
-
-\newtheorem{rustheorem}{Теорема}
-\newtheorem{russtatement}{Утверждение}
-\newtheorem{rusdefinition}{Определение}
-
-% colors
-\definecolor{darkgreen}{rgb}{0.0, 0.2, 0.13}
-\definecolor{darkcyan}{rgb}{0.0, 0.55, 0.55}
-
-\AtBeginEnvironment{figure}{\setcounter{subfigure}{0}}
-
-\captionsetup[subfloat]{labelformat=empty}
+\usepackage[all]{xy} % xy package for diagrams
+\usepackage{array}
+\usepackage{multicol}% many columns in slide
+\usepackage{hyperref}% urls
+\usepackage{hhline}%tables
+% Your figures are here:
+\graphicspath{ {fig/} {../fig/} }
 
 %----------------------------------------------------------------------------------------------------------
-
-\title[Пример слайдов по работе]{Пример слайдов по работе \\ курса}
-\author{И.\,О.\,Фамилия}
-
-\institute[]{Московский физико-технический институт}
-\date[2022]{\small 10\;февраля\;2022\,г.}
-
-%---------------------------------------------------------------------------------------------------------
+\title[\hbox to]{Ансамблирование линейных моделей с помощью выпуклых комбинаций через максимизацию корреляции с откликом}
+\author[И.\,М. Борисов]{Борисов Иван Максимович}
+\institute{МГУ}
+\date{\footnotesize
+\par\smallskip\emph{Научный руководитель:} Сенько Олег Валентинович
+\par\bigskip\small 2024}
+%----------------------------------------------------------------------------------------------------------
 \begin{document}
-
+%----------------------------------------------------------------------------------------------------------
 \begin{frame}
-\titlepage
+\thispagestyle{empty}
+\maketitle
 \end{frame}
-
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}{Цель исследования}
+Разработка нового метода линейной регрессии, основанного на ансамблировании выпуклых комбинаций "элементарных" регрессий, с акцентом на максимизацию корреляции предсказаний с целевой переменной. Ожидается, что предложенная модель будет демонстрировать качество, сопоставимое с Эластичной сетью на данных малого объема.
+\end{frame}
 %----------------------------------------------------------------------------------------------------------
-\section{Слайд об исследованиях}
-\begin{frame}{Слайд об исследованиях}
-\bigskip
-Исследуется проблема \ldots.
-\begin{block}{Цель исследования~---}
-предложить метод \ldots.
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}{Литература}
+\begin{itemize}
+    \item А. А. Докукин, О. В. Сенько, “Регрессионная модель, основанная на выпуклых комбинациях, максимально коррелирующих с откликом”, Ж. вычисл. матем. и матем. физ., 55:3 (2015), 530–544; Comput. Math. Math. Phys., 55:3 (2015), 526–539
+    \item Senko O., Dokukin A. Optimal forecasting based on convex correcting procedures // New Trends in Classifica* tion and Data Mining. ITHEA, Sofia, 2010. P. 62–72.
+    \item Ensembles of Regularized Linear Models//Anthony Christidis, Laks V.S. Lakshmanan, Ezequiel Smucler, Ruben Zamar (2001)
+\end{itemize}
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{Постановка задачи}
+    \begin{block}{Решается задача}
+    $X = \{x^1, x^2, \dots , x^n\}, x^i \in \mathbb{R}^d$ - объекты, $Y = \{y^1, \dots, y^n\}, y^i \in \mathbb{R}$ - отклики. \\
+    Решаем задачу линейной регрессии $a: X \rightarrow Y$, то есть  $a(x) = \langle w, x \rangle + b$, где $w \in \mathbb{R}^d, b \in \mathbb{R}$ — обучаемые параметры линейной модели.\\ \\
+    \end{block}
+    \begin{block}{Проблема}
+    Мультиколлинеарность —  высокая корреляция между переменными. Особенно данная проблема существенна в случае $d >> n$.
+    \end{block}
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{Борьба с мультиколлинеарностью.}
+\begin{block}{Начальная задача}
+$$L(\theta) \rightarrow min_{\theta}$$ \\
+где $\theta = (w, b) \in \mathbb{R}^{d+1}$ — вектор обучаемых параметров. 
 \end{block}
-\begin{block}{Требуется предложить}
-\justifying
-\begin{enumerate}[1)]
-\item метод \ldots,
-\item метод \ldots,
-\item метод \ldots.
+\begin{block}{Новая задача}
+$$L(\theta) + C(\theta) \rightarrow min_{\theta}$$ 
+\\ где $C: \Theta \rightarrow \mathbb{R}$. 
+\end{block}
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{Борьба с мультиколлинеарностью.}
+\begin{block}{Положим}
+    Пусть $L(\theta) = MSE(\theta)$ и $C_i = w_i \rho(y, x_i)$, \\
+    где $\rho(y, x_i)$ — коэффициент корреляции Пирсона. \\
+\end{block}
+\begin{block}{Тогда:} \\
+\begin{equation}
+\begin{cases}
+    \sum_{i=1}^n (y^i - b - \langle w, x^i\rangle)^2 \rightarrow min_\theta\\
+    C_1 = w_1 \rho(y, x_1) \geq 0\\
+    \dots \\
+    C_k = w_k \rho(y, x_k) \geq 0 \\
+\end{cases}
+\end{equation}
+\end{block}
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{Переход от задачи оптимизации к поиску наилучшей выпуклой комбинации.}
+Решение (1) эквивалентно следующему алгоритму:
+\begin{enumerate}
+    \item Методом наименьших квадратов строятся $d$ "элементарных" регрессоров:
+    $$
+    R_i = b_i + w_ix_i, \quad \overline{R} = (R_1, \dots, R_d).
+    $$
+    \item Находится выпуклая комбинация с максимальной корреляцией с откликом:
+    $$
+     \sum_{i=1}^d c_i = 1, c_i \geq 0 \Rightarrow \rho(P(\overline{c}^*, \overline{R}), y) \geq \rho(P(\overline{c}, \overline{R}), y) 
+    $$
+    $$
+    \forall \overline{c} = (c_1, \dots, c_d)
+    $$
+    где $P(\overline{c},\overline{R}) = \sum_{i=1}^d c_i^* R^i$ и $\overline{c}^*$ — оптимальная комбинация.
+    \item Строится линейная регрессия для прогнозирования $y$:
+    $$
+    a(x) = \beta + \alpha P(\overline{c}^*, \overline{R}).
+    $$
+\end{enumerate}
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{Оптимизационная задача}
+\begin{block}{Корреляция Пирсона для выпуклой комбинации}
+\begin{align*}
+    \rho(Y, P(\overline{c}, \overline{R})) &= \frac{cov(\overline{P}, Y)}{\sqrt{\mathbb{D}\overline{P}} \sqrt{\mathbb{D}Y}} = \frac{\mathbb{E}[(\overline{P} - \mathbb{E}\overline{P})(Y - \mathbb{E}Y)]}{\sqrt{\mathbb{D}\overline{P}} \sqrt{\mathbb{D}Y}}\\ 
+    &= \frac{\sum_{i=1}^d c_i \mathbb{D}R_i}{\sqrt{\mathbb{D}Y} \sqrt{ \sum_{i=1}^l c_i \mathbb{D}R_i - \frac{1}{2} \sum_{i=1}^l \sum_{j=1}^l c_i c_j \varrho(R_i, R_j)}} = \\
+    &= \frac{\theta}{\sqrt{\mathbb{D}Y} \sqrt{ \theta- \frac{1}{2} \sum_{i=1}^l \sum_{j=1}^l c_i c_j \varrho(R_i, R_j)}} \rightarrow \max_{\theta}
+\end{align*}
+\end{block}
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{Решение для двух элементарных предикторов}
+$$
+\rho(Y, P(r, \theta)) = \frac{\theta}{\sqrt{\mathbb{D}Y} \sqrt{ \theta + \varrho(r_1, r_2) \frac{(\theta - \mathbb{D}r_1)(\theta - \mathbb{D}r_2)}{(\mathbb{D}r_1 - \mathbb{D}r_2)^2} }} \rightarrow max_\theta
+$$ \\
+Взяв производную по $\theta$ и приравняв ее к $0$, получим: \\
+$$
+    \theta^* = \frac{-2 \varrho(r_1, r_2) \mathbb{D}r_1 \mathbb{D} r_2}{(\mathbb{D}r_1 - \mathbb{D}r_2)^2 - \varrho(r_1, r_2)(\mathbb{D}r_1 + \mathbb{D} r_2)}
+$$
+\\
+\textbf{Утверждение 1:} \\ Ансамбль $\overline{r} = (r_1, r_2)$ является несократимым $\Longleftrightarrow$ 
+\begin{equation}
+\begin{cases}
+    \theta^* = \frac{-2 \varrho(r_1, r_2) \mathbb{D}r_1 \mathbb{D} r_2}{(\mathbb{D}r_1 - \mathbb{D}r_2)^2 - \varrho(r_1, r_2)(\mathbb{D}r_1 + \mathbb{D} r_2)} \\
+    \theta^* \in (\mathbb{D}r_1, \mathbb{D}r_2) \\
+    \exists i \in \{1, 2\}: \rho(Y, P(r, \theta^*)) \geq \rho(Y, r_i) 
+\end{cases}
+\end{equation}
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{Многомерный случай}
+$
+P = \big\vert \big\vert \rho(r_i, r_j) \big\vert \big\vert_{d \times d}, V = \big\vert \big\vert \mathbb{D} r_i \big\vert \big\vert_{1 \times d}, I = \big\vert \big\vert 1 \big\vert \big\vert_{1 \times d}, O = \big\vert \big\vert 0 \big\vert \big\vert_{1 \times d}
+$
+$$
+A_k = \sum_{i=1}^l P^{-1}_{ki}\mathbb{D}r_i, B_k = \sum_{i=1}^l P^{-1}_{ki}
+$$
+$$
+C_k = \frac{\alpha B_k - \beta A_k}{\alpha \gamma - \beta^2}, D_k = \frac{\gamma A_k - \beta B_k}{\alpha \gamma - \beta^2}
+$$
+$$
+Q_0 = \sum_{i=1}^{d} \sum_{j=1}^{d} C_i C_j \varrho_{ij}, Q_1 = \sum_{i=1}^{d} \sum_{j=1}^{d} (C_i D_j  + C_j D_i)\varrho_{ij}
+$$
+$$
+Q_2 = \sum_{i=1}^{d} \sum_{j=1}^{d} D_i D_j \varrho_{ij}
+$$
+Тогда:
+\begin{equation}
+    \boxed{c_k^* = C_k + D_k \theta}
+\end{equation}
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{Многомерный случай}
+\textbf{Утверждение 2:} Если ансамбль $\overline{r}$ является несократимым относительно коэффициента корреляции, и \exists $P^{-1}$, $(\theta_{min}, \theta_{max})$ — интервал значений, на котором $\forall k = 1, \dots, d \Rightarrow c^*_k > 0$, тогда выполнены неравенства: \\
+$$
+\begin{cases}
+    \theta_{min} < \theta^* < \theta_{max} \\
+    \kappa(\theta^*) > \kappa(\theta_{min}) \\ 
+    \kappa(\theta^*) > \kappa(\theta_{max}), 
+\end{cases}
+$$
+$$\text{где } c_k^* = C_k + D_k \theta, \theta^* = \frac{Q_0}{(1- 0.5 Q_1)}$$
+Также максимум корреляции $\rho(Y, P(\overline{r}, c)) = \frac{\kappa(\theta)}{\mathbb{D}Y}$ на $\overline{D}_d$ достигается при $\theta^*$ в точке $c^*$. \\
+Верно и обратное утверждение.
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{Основной алгоритм.}
+\begin{block}{Двумерный случай}
+    \begin{itemize}
+    \item Обучаем на i-ом признаке $d$ МНК-регрессий.
+    \item На валидационной выборке оцениваем: $$
+    \mathbb{D}R_i = \frac{1}{n} \sum_{k=1}^n (R_i(x^k_i) - \mathbb{E}R_i)^2, \mathbb{E}R_i = \frac{1}{n} \sum_{k=1}^n R_i(x^k_i)$$
+    $$
+    \varrho(R_{i}, R_{j}) = \frac{1}{n} \sum_{k=1}^n (R_i(x^k_i) - R_j(x^k_j))
+    $$
+    \item Вычисляем $\theta^*$ для всех пар <<элементарных>> предикторов по формуле (2).
+    \item Проверяем $\theta^*_{i,j} \in (\mathbb{D}R_i, \mathbb{D}R_j)$.
+    \item Оставляем только те $\theta^*_{ij}$, для которых $\forall k \in \{i, j\}: \rho(Y, P(\overline{R}, \theta_{ij}^*)) \geq \tau \rho(Y, R_k), \tau \geq 1$
+\end{itemize}
+\end{block}
+\end{frame}
+%----------------------------------------------------------------------------------------------------------
+\begin{frame}{Основной алгоритм.}
+\begin{block}{Многомерный случай}
+ \begin{itemize}
+    \item Создаем словарь, где ключами являются индексы "элементарных" регрессоров в ансамбле, а значениями — их веса $c_k$.
+    \item Для каждого ненулевого $\theta^*_{ij}$ из двумерного случая находим коэффициенты по формуле (3) и записываем их в словарь.
+    \item Проходим по переменным, не входящим в текущий ансамбль, и добавляем соответствующий элементарный предиктор.
+\end{itemize} \\
+\end{block}
+%----------------------------------------------------------------------------------------------------------
+\end{frame}
+\begin{frame}{Основной алгоритм.}
+\begin{block}{Многомерный случай (продолжение)}
+ \begin{itemize}
+    \item Проверяем выполнение условий утверждения 2 для нового ансамбля.
+    \item Если условия выполнены, обновляем словарь, удаляя старый ансамбль и добавляя новый, и продолжаем перебор переменных.
+    \item Если условия нарушены, завершаем перебор для текущего ансамбля и возвращаемся к предыдущему. 
+\end{itemize} \\
+\end{block}
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}{Альтернативный алгоритм}
+ \begin{itemize}
+    \item Бутстрапируем выборку.
+    \item Запускаем алгорит построения Оптимальных Выпуклых Комбинаций.
+    \item Вместо полного перебора на каждой итерации фиксируем максимально коррелирующую с целевой переменной комбинацию.
+    \item Для добавления вариативности в комбинации используем метод случайных подпространств.
+    \item Повторяем заданное число $n\_bootstrap$ раз.
+\end{itemize}
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}{Получение итогового предсказания}
+\begin{block}{Обозначим}
+     $l$ - число выпуклых комбинаций; $\text{ВПК}_i(x)$ - предсказание i-ой комбинации на x; Y - целевые переменные тренировочной выборки; $\overline{\text{ВПК}}(X)$ - матрица, столбцы которой - предсказания каждой выпуклой комбинации на тренировочной выборке; $\rho_i$ - коэффициент корреляции Пирсона i-ой комбинации с целевой переменной.
+\end{block}
+\begin{block}{Тогда}
+\begin{itemize}
+    \item $\text{ВПК}_{\text{ср}}(x) = \alpha_1 (\frac{1}{l} \sum_{i=1}^l \text{ВПК}_i(x)) + \beta_1$
+    \item $\text{ВПК}_{\text{кор}}(x) = \alpha_2 ( \sum_{i=1}^l \frac{1}{1 - \rho^2_i} \text{ВПК}_i(x)) + \beta_2$
+    \item $\text{ВПК}_{\text{лин}}(x) = \operatorname{Ridge}[\overline{\text{ВПК}}(X), Y](x)$
+\end{itemize}
+где $\alpha_i, \beta_i$ — коэффициенты, подобранные по MSE на тренировочной выборке.
+\\ \\
+\end{block}
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}{Эксперименты}
+\begin{block}{Данные}
+2 датасета размеров $176 \times 94$ и $92 \times 100$. Разиты в отношении 8:2 на обучение и тест с $random\_seed=42$.\\
+Домен: химические элементы. К примеру, CaAuBi, CdAgSb, CdAuSb, CdCuSb, CePdBi, ..., ZrNiSn, ZrPdSn, ZrPtSn, ZrRhSb, ZrRuSb. \\
+Предлагается по набору признаков химических элементов предсказать некоторый параметр данного химического элемента
+\end{block}
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}{Эксперименты}
+\begin{block}{Модели для сравнения}
+Если $L = \sum_{i=1}^n (y_i - a(x_i))^2 + R(w)$, то в зависимости от функции $R(w)$ определим:
+\begin{itemize}
+    \item Ridge: $R(w) = ||w||_2^2$
+    \item Lasso: $R(w) = ||w||_1$
+    \item ElasticNet: $R(w) = 0.5 \cdot ||w||_1 + 0.25 \cdot ||w||_2^2$
+\end{itemize}
+Также для сравнения обучим ARD-регрессию (RVR) и Байесовскую Ridge регрессию. 
+\end{block}
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}{Эксперименты}
+\begin{block}{Гиперпараметры}
+\begin{enumerate}
+    \item $\tau = 1.25$ - сила, с которой растет корреляция при добавлении нового предиктора.
+    \item $p=0.5$ - вероятность вхождения $i$-ого признака в методе случайных подпространств. 
+    \item $n_{\text{bootstrap}} = 10$ - число бутстрапирований выборки (максимальное число предикторов в ансамбле.)
 \end{enumerate}
 \end{block}
-\begin{block}{Решение}
-Для \ldots.
+\end{frame}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}{Эксперименты}
+\begin{block}{Результаты}
+\begin{center}
+\begin{table}[!htb]
+\begin{tabular}{||c | c | c||}
+ \hline
+ Модель & $r^2$ & Корреляция
+  \\
+   & & 
+ Пирсона \\[0.5ex] 
+ \hline\hline
+ \text{ВПК}_{\text{ср}} & 0.566/0.89 & 0.794/0.946 \\ 
+ \hline
+ \text{ВПК}_{\text{кор}} & 0.598/0.894 & 0.81/0.949 \\ 
+ \hline
+ \text{ВПК}_{\text{лин}} & 0.953/0.918 & 0.977/0.962 \\ 
+ \hline
+ Ridge & \textbf{0.9603} & \textbf{0.9809} \\
+ \hline
+ Lasso & 0.843 & 0.922\\
+ \hline
+ ElasticNet & 0.885 & 0.943  \\
+ \hline
+ ARD & 0.911 & 0.958\\ [1ex] 
+ \hline
+ Байесовская & 0.944 & 0.973 \\
+  \hline
+\end{tabular}  
+  \caption{Данные 1}
+\end{table}
+\end{center}
 \end{block}
 \end{frame}
 
-%---------------------------------------------------------------------------------------------------------
-\section{Постановка задачи \ldots}
-\begin{frame}{Постановка задачи \ldots}
-Заданы
-\begin{enumerate}[1)]
-    \item признаки \ldots,
-    \item целевая переменная \ldots,
-    \item \ldots.
-\end{enumerate}
-
-\ldots
-
-\bigskip
-
-Требуется выбрать модель \ldots из множества
-\[
-	\mathfrak{G} = \left\{\mathbf{g}| \mathbf{g}:\mathbb{R}^{n} \to \mathbb{Y}^\prime\right\}.
-\]
-Оптимизационная задача \ldots:
-\[
-	\mathbf{g} = \arg\min_{\mathbf{g} \in \mathfrak{G}} \mathcal{L}\bigr(\ldots\bigr),
-\]
-где $\mathcal{L}$~--- функция ошибки.
-
-\bigskip
-\footnotetext[1]{\textit{Lopez-Paz D., Bottou L., Scholkopf B., Vapnik V.} Unifying distillation and privileged information // ICLR, 2016.}
-\footnotetext[2]{\textit{Hinton G., Vinyals O., Dean J.} Distilling the knowledge in a neural network // NIPS, 2015.}
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}{Эксперименты}
+\begin{block}{Результаты}
+\begin{center}
+\begin{table}[!htb]
+\begin{tabular}{||c | c | c||}
+ \hline
+ Модель & $r^2$ & Корреляция
+  \\
+   & & 
+ Пирсона \\[0.5ex] 
+ \hline\hline
+ \text{ВПК}_{\text{ср}} & 0.9/0.924 & 0.949/0.962 \\ 
+ \hline
+ \text{ВПК}_{\text{кор}} & 0.882/0.921 & 0.939/0.961 \\ 
+ \hline
+ \text{ВПК}_{\text{лин}} & 0.961/0.935 & 0.981/0.97 \\ 
+ \hline
+ Ridge & 0.961 & 0.981 \\
+ \hline
+ Lasso & 0.949 & 0.975 \\
+ \hline
+ ElasticNet & 0.953 & 0.9767  \\
+ \hline
+ ARD & \textbf{0.963} & \textbf{0.982}\\ [1ex] 
+ \hline
+ Байесовская & 0.962 & 0.982 \\
+  \hline
+\end{tabular}
+\caption{Данные 2}
+\end{table}
+\end{center}
+\end{block}
 \end{frame}
-
-%----------------------------------------------------------------------------------------------------------
-\section{Предложенный метод \ldots}
-\begin{frame}{Предложенный метод \ldots}
-~\\[-1mm]
-Заданы
-\begin{enumerate}[1)]
-	\item \ldots,
-	\item \ldots.
-\end{enumerate}
-
-\medskip
-Параметрические семейства:
-\[
-\setlength\abovedisplayskip{0pt}
-\mathfrak{F} = \left\{\mathbf{f}| \mathbf{f} = \text{softmax}\bigr(\mathbf{v}\bigr(\mathbf{x}\bigr)/T\bigr), \quad \mathbf{v}: \mathbb{R}^{n} \to \mathbb{R}^K \right\},
-\]
-\[
-\mathfrak{G} = \left\{\mathbf{g}| \mathbf{g} = \text{softmax}\bigr(\mathbf{z}\bigr(\mathbf{x}\bigr)/T\bigr), \quad \mathbf{z}: \mathbb{R}^n \to \mathbb{R}^K \right\},
-\]
-где~\ldots.
-
-\medskip
-Функция ошибки
-\[
-\setlength\abovedisplayskip{0pt}
-\begin{aligned}
-   \mathcal{L}\bigr(\mathbf{g}\bigr) = &-\sum_{i=1}^{m}\underbrace{{\sum_{k=1}^{K}y^k_i\log\mathbf{g}\bigr(\mathbf{x}_i\bigr)\bigr|_{T=1}}}_{\text{исходная функция потерь}}- \sum_{i=1}^{m}\underbrace{{\sum_{k=1}^{K}\mathbf{f}\bigr(\mathbf{x}_i\bigr)\bigr|_{T=T_0}\log\mathbf{g}\bigr(\mathbf{x}_i\bigr)\bigr|_{T=T_0}}}_{\text{слагаемое дистилляции}},
-\end{aligned}
-\setlength\belowdisplayskip{0pt}
-\]
-где~\ldots.
-
-Оптимальная модель выбирается из класса,
-$\hat{\mathbf{g}} = \arg\min\limits_{\mathbf{g} \in \mathfrak{G}_{\text{cl}}} \mathcal{L}\bigr(\mathbf{g}\bigr).$
+%-----------------------------------------------------------------------------------------------------
+\begin{frame}{Эксперименты}
+\begin{block}{Результаты}
+По результатам третий метод усреднения классического алгоритма демонстрирует наилучшее качество, в то время как первый и второй методы значительно уступают. Сравнение ВПК с другими моделями будет основываться на лучших результатах. Новый алгоритм превосходит Лассо и Эластичную сеть, а также показывает сопоставимые результаты с Ridge, ARD и Баейсовской регрессиями. В целом, новый метод имеет право на существование и может показывать результаты не хуже устоявшихся решений.
+\end{block}
 \end{frame}
-
-%----------------------------------------------------------------------------------------------------------
-\section{Анализ предложенного метода \ldots}
-\begin{frame}{Анализ предложенного метода \ldots}
-\justifying
-
-На графике показана зависимость значения параметров$w_i$ в зависимости от параметра~$l_1$-регуляризации~$C$.
-\begin{figure}[h!]
-\includegraphics[width=0.45\textwidth]{../figures/log_reg_cs_exp.eps}
-\includegraphics[width=0.45\textwidth]{../figures/log_reg_cs_exp.eps}
-\end{figure}
-
-С увеличением параметра регуляризации~$C$ число ненулевых параметров~$w_i$ уменьшается.
-
+\begin{frame}{Итоги}
+В результате работы были обоснованы теоретические основы модели, основанной на ансамблировании линейных моделей с выпуклыми комбинациями для максимизации корреляции с целевой переменной. Алгоритм был реализован и протестирован на реальных данных, показав лучшие результаты по сравнению с некоторыми существующими решениями. Исследованы более эффективные методы агрегации ансамбля, включая метод случайных подпространств и жадного отбора, который снижает вычислительные сложности перебора d! комбинаций. В дальнейшем алгоритм можно развить с помощью идеи дивергентного леса.
 \end{frame}
-
-%----------------------------------------------------------------------------------------------------------
-\section{Выводы}
-\begin{frame}{Выводы}
-\justifying
-	\begin{enumerate}
-	\justifying
-	    \item Предложен \ldots.
-        \item Доказаны теоремы \ldots, 
-        \begin{itemize}
-            \item[---] \ldots,
-            \item[---] \ldots.
-        \end{itemize}
-        \item Предложен метод \ldots
-        \begin{itemize}
-            \item[---] \ldots,
-            \item[---] \ldots.
-        \end{itemize}
-        \item Предложены методы \ldots
-        \begin{itemize}
-            \item[---] \ldots,
-            \item[---] \ldots.
-        \end{itemize}
-        \item Предложена вероятностная интерпретации \ldots.
-	\end{enumerate}
-\end{frame}
-%----------------------------------------------------------------------------------------------------------
-
 \end{document} 
